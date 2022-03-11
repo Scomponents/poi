@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.intechcore.scomponents</groupId>
+    <artifactId>scell-apache-poi</artifactId>
+    <version>1.0.4</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <organization>
+        <name>Intechcore GmbH</name>
+        <url>http://www.intechcore.com</url>
+    </organization>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>SparseBitSet</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intechcore.scomponents.scount</groupId>
+            <artifactId>scell-interfaces</artifactId>
+            <version>2.0.5</version>
+        </dependency>
+    </dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>itc-releases</id>
+			<url>${itcReleasesUrl}</url>
+		</repository>
+		<snapshotRepository>
+			<id>itc-snapshots</id>
+			<url>${itcSnapshotsUrl}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
