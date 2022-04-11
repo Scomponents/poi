@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
@@ -39,19 +39,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.intechcore.org.apache.poi.util.FormatHelper;
-import com.intechcore.scomponents.helper.MathHelper;
-import com.intechcore.scomponents.services.ServiceContainer;
-import com.intechcore.scomponents.services.logger.Logger;
-import com.intechcore.scomponents.services.logger.LoggerFactory;
 import com.zaxxer.sparsebits.SparseBitSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements printing out a value using a number format.
  */
 public class NumberFormatter extends ValueFormatter {
 
-    private static final Logger LOG = ServiceContainer.getInstance().resolve(LoggerFactory.class)
-            .getLogger(NumberFormatter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NumberFormatter.class);
 
     private static final Pattern fractionStripper = Pattern.compile("(\"[^\"]*\")|([^ ?#\\d/]+)");
     private static final Pattern fractionPattern = Pattern.compile("(?:([#\\d]+)\\s+)?(#+)\\s*/\\s*([#\\d]+)");
@@ -106,7 +103,7 @@ public class NumberFormatter extends ValueFormatter {
             ValueFormatter cf;
             if (value instanceof Number) {
                 Number num = (Number) value;
-                cf = (MathHelper.equals(num.doubleValue() % 1.0, 0)) ? new NumberFormatter(locale, "#") :
+                cf = (num.doubleValue() % 1.0 == 0) ? new NumberFormatter(locale, "#") :
                         new NumberFormatter(locale, "#.#");
             } else {
                 cf = TextFormatter.SIMPLE_TEXT;
@@ -811,7 +808,7 @@ public class NumberFormatter extends ValueFormatter {
         if (!improperFraction) {
             // If fractional part is zero, and numerator doesn't have '0', write out
             // only the integer part and strip the rest.
-            if (MathHelper.equals(fractional, 0) && !hasChar('0', numeratorSpecials)) {
+            if (fractional == 0 && !hasChar('0', numeratorSpecials)) {
                 writeInteger(result, output, integerSpecials, mods, false);
 
                 Special start = lastSpecial(integerSpecials);
@@ -833,10 +830,10 @@ public class NumberFormatter extends ValueFormatter {
                 boolean intOnlyHash = integerSpecials.isEmpty()
                         || (integerSpecials.size() == 1 && hasChar('#', integerSpecials));
 
-                boolean removeBecauseZero     = MathHelper.equals(fractional, 0) && (intOnlyHash || numNoZero);
-                boolean removeBecauseFraction = !MathHelper.equals(fractional, 0) && intNoZero;
+                boolean removeBecauseZero     = fractional == 0 && (intOnlyHash || numNoZero);
+                boolean removeBecauseFraction = fractional != 0 && intNoZero;
 
-                if (MathHelper.equals(value, 0) && (removeBecauseZero || removeBecauseFraction)) {
+                if (value == 0 && (removeBecauseZero || removeBecauseFraction)) {
                     Special start = lastSpecial(integerSpecials);
                     boolean hasPlaceHolder = hasChar('?', integerSpecials, numeratorSpecials);
                     NumberStringMod sm = hasPlaceHolder

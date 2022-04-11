@@ -22,10 +22,9 @@
 
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import com.intechcore.scomponents.services.ServiceContainer;
-import com.intechcore.scomponents.services.logger.Logger;
-import com.intechcore.scomponents.services.logger.LoggerFactory;
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.text.FieldPosition;
@@ -48,8 +47,7 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("serial")
 public class FractionFormat extends Format {
-    private static final Logger LOG = ServiceContainer.getInstance().resolve(LoggerFactory.class)
-            .getLogger(FractionFormat.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FractionFormat.class);
     private static final Pattern DENOM_FORMAT_PATTERN = Pattern.compile("(?:(#+)|(\\d+))");
 
     //this was chosen to match the earlier limitation of max denom power

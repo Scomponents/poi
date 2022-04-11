@@ -21,18 +21,14 @@
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import com.intechcore.scomponents.services.ServiceContainer;
-import com.intechcore.scomponents.services.regexwrapper.MatcherAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ElapsedTimePartHandler implements PartHandler {
-    private static final RegexFactory regexFactory = ServiceContainer.getInstance().resolve(RegexFactory.class);
-    protected static final RegexAdapter PERCENTS =  regexFactory.createFromPattern("%");
+    protected static final Pattern PERCENTS =  Pattern.compile("%");
 
     protected final List<ElapsedTimeSpec> specs = new ArrayList<>();
 
@@ -51,7 +47,7 @@ public class ElapsedTimePartHandler implements PartHandler {
     // only special character for this is '%', so we have to handle all the
     // quoting in this method ourselves.
 
-    public String handlePart(MatcherAdapter matcher, String part, FormatType type, StringBuffer desc) {
+    public String handlePart(Matcher matcher, String part, FormatType type, StringBuffer desc) {
         int pos = desc.length();
         char firstCh = part.charAt(0);
         switch (firstCh) {

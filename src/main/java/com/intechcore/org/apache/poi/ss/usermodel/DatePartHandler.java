@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
@@ -22,9 +22,8 @@
 package com.intechcore.org.apache.poi.ss.usermodel;
 
 import com.intechcore.org.apache.poi.util.StringUtil;
-import com.intechcore.scomponents.services.regexwrapper.MatcherAdapter;
-
 import java.util.Locale;
+import java.util.regex.Matcher;
 
 public class DatePartHandler implements PartHandler {
     protected boolean amPmUpper;
@@ -38,7 +37,7 @@ public class DatePartHandler implements PartHandler {
     protected int hLen;
 
     @Override
-    public String handlePart(MatcherAdapter matcher, String part, FormatType type, StringBuffer desc) {
+    public String handlePart(Matcher matcher, String part, FormatType type, StringBuffer desc) {
 
         int pos = desc.length();
         char firstCh = part.charAt(0);

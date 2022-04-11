@@ -15,14 +15,33 @@
    limitations under the License.
 
    2022 - Intechcore GmbH.
-   This class is modified copy of Apache POI 4.1.2 class.
-   It was modified to use Apache POI's data formatting
-   in SCell product.
 ==================================================================== */
-package com.intechcore.org.apache.poi.ss.usermodel;
 
-import java.util.regex.Matcher;
+package com.intechcore.org.apache.poi.bridge;
 
-public interface PartHandler {
-    String handlePart(Matcher m, String part, FormatType type, StringBuffer desc);
+import java.time.LocalDateTime;
+
+public final class BridgeContainer {
+    private static LocalDateTime START_DATE_1904;
+    private static IDateTimeUtilsBridge dateTimeUtils;
+    private static IValueFormatDetectorStorageBridge detectorStorage;
+
+    public static void Init(LocalDateTime startDate1904, IDateTimeUtilsBridge dateTimeUtils,
+                            IValueFormatDetectorStorageBridge detectorStorage) {
+        START_DATE_1904 = startDate1904;
+        BridgeContainer.dateTimeUtils = dateTimeUtils;
+        BridgeContainer.detectorStorage = detectorStorage;
+    }
+
+    public static LocalDateTime getStartDate1904() {
+        return START_DATE_1904;
+    }
+
+    public static IDateTimeUtilsBridge getDateTimeUtils() {
+        return dateTimeUtils;
+    }
+
+    public static IValueFormatDetectorStorageBridge getDetectorStorage() {
+        return detectorStorage;
+    }
 }

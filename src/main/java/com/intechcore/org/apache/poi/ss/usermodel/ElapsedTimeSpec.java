@@ -14,14 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
-
-import com.intechcore.scomponents.helper.MathHelper;
 
 public class ElapsedTimeSpec {
 
@@ -54,14 +52,13 @@ public class ElapsedTimeSpec {
             case '0':
                 return SEC_FACTOR / Math.pow(10, len);
             default:
-                throw new IllegalArgumentException(
-                        "Uknown elapsed time spec: " + type);
+                throw new IllegalArgumentException("Uknown elapsed time spec: " + type);
         }
     }
 
     public long valueFor(double elapsed) {
         double val;
-        if (MathHelper.equals(modBy,0)) {
+        if (modBy == 0) {
             val = elapsed / factor;
         } else {
             val = elapsed / factor % modBy;

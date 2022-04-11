@@ -14,33 +14,21 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  2021 - Intechcore GmbH.
+  2022 - Intechcore GmbH.
   This class is modified copy of Apache POI 4.1.2 class.
   It was modified to use Apache POI's data formatting
   in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import com.intechcore.org.apache.poi.util.FormatDetectorsStorage;
-import com.intechcore.org.apache.poi.util.FormatHelper;
-import com.intechcore.scomponents.helper.ARGB;
-import com.intechcore.scomponents.services.ServiceContainer;
-import com.intechcore.scomponents.services.collections.CollectionFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.intechcore.scomponents.services.datetimewrappers.IDateTimeUtils;
-import com.intechcore.scomponents.services.format.DateUtil;
-import com.intechcore.scomponents.services.format.FormatResult;
-import com.intechcore.scomponents.services.format.IExtraValueFormatDetector;
-import com.intechcore.scomponents.services.format.IFormatService;
-import com.intechcore.scomponents.services.format.IValueFormatDetector;
-import com.intechcore.scomponents.services.format.IValueFormatGenerator;
-import com.intechcore.scomponents.services.format.IValueFormatter;
-import com.intechcore.scomponents.services.logger.Logger;
-import com.intechcore.scomponents.services.logger.LoggerFactory;
-import com.intechcore.scomponents.services.regexwrapper.MatcherAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexFactory;
+import com.intechcore.org.apache.poi.bridge.BridgeContainer;
+import com.intechcore.org.apache.poi.bridge.IValueFormatDetectorBridge;
+import com.intechcore.org.apache.poi.bridge.PoiResult;
+import com.intechcore.org.apache.poi.util.FormatHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -50,7 +38,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -91,12 +81,10 @@ import java.util.regex.Pattern;
  * </dl>
  * In addition to these, there is a general format that is used when no format
  * is specified.
- *
  */
-public class POIFormat implements IFormatService, IValueFormatGenerator, IValueFormatter, IExtraValueFormatDetector,
-        Serializable {
+public class POIFormat implements Serializable {
 
-    private final IValueFormatDetector formatDetector;
+    private final IValueFormatDetectorBridge formatDetector;
 
     protected final Locale locale;
     protected final FormatPart posNumFmt;
@@ -105,32 +93,22 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
     protected final FormatPart textFmt;
     protected final int formatPartCount;
 
-    private static final FormatDetectorsStorage formatDetectorsStorage = FormatDetectorsStorage.Instance;
+    private static final Logger LOG = LoggerFactory.getLogger(POIFormat.class);
 
-    private static final IDateTimeUtils dateTimeUtils = ServiceContainer.getInstance().resolve(IDateTimeUtils.class);
-
-    private static final Logger LOG = ServiceContainer.getInstance().resolve(LoggerFactory.class)
-            .getLogger(POIFormat.class);
-
-    private static final RegexFactory regexFactory = ServiceContainer.getInstance().resolve(RegexFactory.class);
-
-    protected static final RegexAdapter PARTS_DELIMITER = regexFactory
-        .createFromPattern(FormatPart.FORMAT_PAT.pattern() + "(;|$)", Pattern.CASE_INSENSITIVE);
+    protected static final Pattern PARTS_DELIMITER = Pattern.compile(FormatPart.FORMAT_PAT.pattern() + "(;|$)",
+            Pattern.CASE_INSENSITIVE);
 
     private final static String QUOTE = "\"";
 
-    @Override
-    public IValueFormatter getFormatter() {
+    public POIFormat getFormatter() {
         return this;
     }
 
-    @Override
-    public IValueFormatGenerator getGenerator() {
+    public POIFormat getGenerator() {
         return this;
     }
 
-    @Override
-    public IExtraValueFormatDetector getExtraDetector() {
+    public POIFormat getExtraDetector() {
         return this;
     }
 
@@ -142,15 +120,13 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
         }
 
         @Override
-        public FormatResult apply(Object value) {
+        public PoiResult apply(Object value) {
             String text = (new GeneralFormatter(this.locale)).format(value);
-            return new FormatResult(text);
+            return new PoiResult(text, null);
         }
     }
 
-    protected static final CollectionFactory collectionFactory = ServiceContainer.getInstance()
-            .resolve(CollectionFactory.class);
-    protected static final Map<Locale, Map<String, POIFormat>> formatCache = collectionFactory.createWeakMap();
+    private static final Map<Locale, Map<String, POIFormat>> formatCache = new WeakHashMap<>();
 
     /**
      * Returns a {@link POIFormat} that applies the given format.  Two calls
@@ -176,11 +152,10 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
     @JsonCreator
     public static synchronized POIFormat getInstance(@JsonProperty("locale") Locale locale,
                                                      @JsonProperty("formatCode") String format) {
-        IValueFormatDetector formatDetector = formatDetectorsStorage.getDetector(locale, format);
-
-        Map<String, POIFormat> formatMap = formatCache.computeIfAbsent(locale, k -> collectionFactory.createWeakMap());
+        Map<String, POIFormat> formatMap = formatCache.computeIfAbsent(locale, k -> new WeakHashMap<>());
         POIFormat result = formatMap.get(format);
         if (result == null) {
+            IValueFormatDetectorBridge formatDetector = BridgeContainer.getDetectorStorage().getDetectorBridge(locale, format);
             if (formatDetector.isGeneral()) {
                 result = new GeneralPOIFormat(locale);
             } else {
@@ -196,28 +171,24 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
         return this.locale;
     }
 
-    @Override
-    public IValueFormatDetector withDecimalPlaces(int decimalsCount) {
+    public IValueFormatDetectorBridge withDecimalPlaces(int decimalsCount) {
         return this.updateFormat(
                 a -> new NestedFormatPartBuilder(a).decimals(decimalsCount).build(),
                 false);
     }
 
-    @Override
-    public IValueFormatDetector withNegativePart(ARGB color, Boolean setBraces, Boolean setMinus) {
+    public IValueFormatDetectorBridge withNegativePart(Integer argbColor, Boolean setBraces, Boolean setMinus) {
         return this.updateFormat(
-                a -> new NestedFormatPartBuilder(a).color(color).braces(setBraces).minus(setMinus).build(),
+                a -> new NestedFormatPartBuilder(a).color(argbColor).braces(setBraces).minus(setMinus).build(),
                 true);
     }
 
-    @Override
-    public IValueFormatDetector setThousandsSeparator(boolean value) {
+    public IValueFormatDetectorBridge setThousandsSeparator(boolean value) {
         return this.updateFormat(
                 a -> new NestedFormatPartBuilder(a).thousandsSeparator(value).build(),
                 false);
     }
 
-    @Override
     public boolean isNumeric() {
         boolean result = this.posNumFmt.type == FormatType.NUMBER;
         if (this.negNumFmt != null) {
@@ -231,7 +202,7 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
         return result;
     }
 
-    private IValueFormatDetector updateFormat(Function<FormatPart, String> function, boolean negOnly) {
+    private IValueFormatDetectorBridge updateFormat(Function<FormatPart, String> function, boolean negOnly) {
         Optional<String> posFormatPart = Optional.ofNullable(this.posNumFmt)
                 .map(part -> negOnly ? part.toString() : function.apply(part));
         Optional<String> negFormatPart = Optional.ofNullable(this.negNumFmt).map(part -> ';' + function.apply(part));
@@ -254,10 +225,10 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
 
     private POIFormat(Locale locale, String formatCode) {
         this.locale = locale;
-        this.formatDetector = formatDetectorsStorage.getDetector(locale, formatCode);
+        this.formatDetector = BridgeContainer.getDetectorStorage().getDetectorBridge(locale, formatCode);
 
         FormatPart defaultTextFormat = new FormatPart(locale, FormatHelper.TEXT_FORMAT);
-        MatcherAdapter formatPartsMatcher = PARTS_DELIMITER.matcher(formatCode);
+        Matcher formatPartsMatcher = PARTS_DELIMITER.matcher(formatCode);
         List<FormatPart> parts = new ArrayList<>();
 
         while (formatPartsMatcher.find()) {
@@ -320,10 +291,9 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
      *
      * @param value The value
      *
-     * @return The result, in a {@link FormatResult}.
+     * @return The result, in a {@link PoiResult}.
      */
-    @Override
-    public FormatResult apply(Object value) {
+    public PoiResult apply(Object value) {
         if (value instanceof Number) {
             Number num = (Number) value;
             double val = num.doubleValue();
@@ -340,8 +310,8 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
         } else if (value instanceof LocalDate) {
             // Don't know (and can't get) the workbook date windowing (1900 or 1904)
             // so assume 1900 date windowing
-            int numericValue = dateTimeUtils.getSerialNumberFromDate((LocalDate) value);
-            if (DateUtil.isValidExcelDate(numericValue)) {
+            int numericValue = BridgeContainer.getDateTimeUtils().getSerialNumberFromDate((LocalDate) value);
+            if (isValidExcelDate(numericValue)) {
                 return getApplicableFormatPart(numericValue).apply(value);
             } else {
                 throw new IllegalArgumentException(
@@ -350,19 +320,21 @@ public class POIFormat implements IFormatService, IValueFormatGenerator, IValueF
         } else if (value instanceof LocalDateTime) {
             // Don't know (and can't get) the workbook date windowing (1900 or 1904)
             // so assume 1900 date windowing
-            double numericValue = dateTimeUtils.getSerialNumberFromDateTime((LocalDateTime) value);
+            double numericValue = BridgeContainer.getDateTimeUtils().getSerialNumberFromDateTime((LocalDateTime) value);
             return getApplicableFormatPart(numericValue).apply(value);
         } else {
             return textFmt.apply(value);
         }
     }
 
-    @Override
+    private static boolean isValidExcelDate(double value) {
+        return (value > -Double.MIN_VALUE);
+    }
+
     public boolean isDate(double value) {
         return this.getApplicableFormatPart(value).getCellFormatType() == FormatType.DATE;
     }
 
-    @Override
     public int getNumberOfDecimalPlaces(Object value) {
         if (this.formatDetector.isGeneral()) {
             return 2;

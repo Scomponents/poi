@@ -15,14 +15,9 @@
    limitations under the License.
 
    2022 - Intechcore GmbH.
-   This class is modified copy of Apache POI 4.1.2 class.
-   It was modified to use Apache POI's data formatting
-   in SCell product.
 ==================================================================== */
-package com.intechcore.org.apache.poi.ss.usermodel;
+package com.intechcore.org.apache.poi.bridge;
 
-import java.util.regex.Matcher;
-
-public interface PartHandler {
-    String handlePart(Matcher m, String part, FormatType type, StringBuffer desc);
+public interface IValueFormatDetectorBridge {
+    boolean isGeneral();
 }

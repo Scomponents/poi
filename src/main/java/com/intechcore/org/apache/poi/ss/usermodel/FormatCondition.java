@@ -14,14 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
-
-import com.intechcore.scomponents.helper.MathHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,13 +100,13 @@ public abstract class FormatCondition {
             case EQ:
                 return new FormatCondition() {
                     public boolean pass(double value) {
-                        return MathHelper.equals(value, c);
+                        return value == c;
                     }
                 };
             case NE:
                 return new FormatCondition() {
                     public boolean pass(double value) {
-                        return !MathHelper.equals(value, c);
+                        return !(value != c);
                     }
                 };
             default:

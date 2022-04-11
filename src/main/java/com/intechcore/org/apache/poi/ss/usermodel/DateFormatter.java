@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
@@ -30,17 +30,14 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
 
+import com.intechcore.org.apache.poi.bridge.BridgeContainer;
 import com.intechcore.org.apache.poi.util.StringUtil;
-import com.intechcore.scomponents.helper.CommonConstants;
 
-/**
- * Formats a date value.
- */
 public class DateFormatter extends ValueFormatter {
     protected final DateFormat dateFmt;
     protected final DatePartHandler partHandler;
 
-    protected final LocalDateTime EXCEL_START_DATE = CommonConstants.START_DATE_1904;
+    protected final LocalDateTime EXCEL_START_DATE = BridgeContainer.getStartDate1904();
 
     protected static /* final */ DateFormatter simpleDate;
 

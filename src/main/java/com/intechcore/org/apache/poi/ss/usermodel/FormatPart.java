@@ -14,21 +14,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
 
+import com.intechcore.org.apache.poi.bridge.PoiResult;
 import com.intechcore.org.apache.poi.util.StringCodepointsIterable;
-import com.intechcore.scomponents.helper.Pair;
-import com.intechcore.scomponents.services.ServiceContainer;
-import com.intechcore.scomponents.services.format.FormatResult;
-import com.intechcore.scomponents.helper.ARGB;
-import com.intechcore.scomponents.services.regexwrapper.MatcherAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexAdapter;
-import com.intechcore.scomponents.services.regexwrapper.RegexFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,11 +52,11 @@ import java.util.regex.Pattern;
  * @author Ken Arnold, Industrious Media LLC
  */
 public class FormatPart {
-    protected final ARGB color;
+    protected final Integer color;
     protected final ValueFormatter format;
     protected final FormatType type;
 
-    static final Map<String, ARGB> NAMED_COLORS;
+    static final Map<String, Integer> NAMED_COLORS;
 
     protected String colorString;
     protected FormatCondition condition;
@@ -71,7 +67,7 @@ public class FormatPart {
 
         for (PredefinedFormatColors color : PredefinedFormatColors.values()) {
             String name = color.name();
-            ARGB argbColor = color.getColor();
+            int argbColor = color.getColor();
             NAMED_COLORS.put(name, argbColor);
             if (name.indexOf('_') > 0) {
                 NAMED_COLORS.put(name.replace('_', ' '), argbColor);
@@ -83,18 +79,18 @@ public class FormatPart {
         }
     }
 
-    private static final RegexFactory regexFactory = ServiceContainer.getInstance().resolve(RegexFactory.class);
+//    private static final RegexFactory regexFactory = ServiceContainer.getInstance().resolve(RegexFactory.class);
 
     /** Pattern for the color part of a cell format part. */
-    public static final RegexAdapter COLOR_PAT;
+    public static final Pattern COLOR_PAT;
     /** Pattern for the condition part of a cell format part. */
-    public static final RegexAdapter CONDITION_PAT;
+    public static final Pattern CONDITION_PAT;
     /** Pattern for the format specification part of a cell format part. */
-    public static final RegexAdapter SPECIFICATION_PAT;
+    public static final Pattern SPECIFICATION_PAT;
     /** Pattern for the currency symbol part of a cell format part */
-    public static final RegexAdapter CURRENCY_PAT;
+    public static final Pattern CURRENCY_PAT;
     /** Pattern for an entire cell single part. */
-    public static final RegexAdapter FORMAT_PAT;
+    public static final Pattern FORMAT_PAT;
 
     /** Within {@link #FORMAT_PAT}, the group number for the matched color. */
     public static final int COLOR_GROUP;
@@ -157,20 +153,20 @@ public class FormatPart {
                 "((?:" + part + ")+)";                 //   # Format spec\n";
 
         int flags = Pattern.CASE_INSENSITIVE; // GWT has not the Pattern.COMMENTS flag
-        COLOR_PAT = regexFactory.createFromPattern(color, flags);
-        CONDITION_PAT = regexFactory.createFromPattern(condition, flags);
-        SPECIFICATION_PAT = regexFactory.createFromPattern(part, flags);
-        CURRENCY_PAT = regexFactory.createFromPattern(currency, flags);
-        FORMAT_PAT = regexFactory.createFromPattern(format, flags);
+        COLOR_PAT = Pattern.compile(color, flags);
+        CONDITION_PAT = Pattern.compile(condition, flags);
+        SPECIFICATION_PAT = Pattern.compile(part, flags);
+        CURRENCY_PAT = Pattern.compile(currency, flags);
+        FORMAT_PAT = Pattern.compile(format, flags);
 
         // Calculate the group numbers of important groups.  (They shift around
         // when the pattern is changed; this way we figure out the numbers by
         // experimentation.)
 
-        COLOR_GROUP = findGroup(FORMAT_PAT, "[Blue]@", "Blue");
-        CONDITION_OPERATOR_GROUP = findGroup(FORMAT_PAT, "[>=1]@", ">=");
-        CONDITION_VALUE_GROUP = findGroup(FORMAT_PAT, "[>=1]@", "1");
-        SPECIFICATION_GROUP = findGroup(FORMAT_PAT, "[Blue][>1]\\a ?", "\\a ?");
+        COLOR_GROUP = findGroup("[Blue]@", "Blue");
+        CONDITION_OPERATOR_GROUP = findGroup("[>=1]@", ">=");
+        CONDITION_VALUE_GROUP = findGroup("[>=1]@", "1");
+        SPECIFICATION_GROUP = findGroup("[Blue][>1]\\a ?", "\\a ?");
     }
 
     /**
@@ -189,14 +185,14 @@ public class FormatPart {
      * @param desc The string to parse.
      */
     public FormatPart(Locale locale, String desc) {
-        MatcherAdapter matcher = FORMAT_PAT.matcher(desc);
+        Matcher matcher = FORMAT_PAT.matcher(desc);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Unrecognized format: " + ValueFormatter.quote(desc));
         }
-        Pair<ARGB, String> colorData = getColorData(matcher);
+        Pair<Integer, String> colorData = getColorData(matcher);
         if (colorData != null) {
-            this.color = colorData.getFirst();
-            this.colorString = colorData.getSecond();
+            this.color = colorData.getKey();
+            this.colorString = colorData.getValue();
         } else {
             this.color = null;
         }
@@ -232,7 +228,6 @@ public class FormatPart {
      * Returns the number of the first group that is the same as the marker
      * string. Starts from group 1.
      *
-     * @param pat    The pattern to use.
      * @param str    The string to match against the pattern.
      * @param marker The marker value to find the group of.
      *
@@ -240,19 +235,20 @@ public class FormatPart {
      *
      * @throws IllegalArgumentException No group matches the marker.
      */
-    protected static int findGroup(RegexAdapter pat, String str, String marker) {
-        MatcherAdapter matcher = pat.matcher(str);
+    private static int findGroup(String str, String marker) {
+        Matcher matcher = FORMAT_PAT.matcher(str);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Pattern \"" + pat.pattern() + "\" doesn't match \"" + str + "\"");
+            throw new IllegalArgumentException("Pattern \"" + FORMAT_PAT.pattern() + "\" doesn't match \"" + str + "\"");
         }
+
         for (int i = 1; i <= matcher.groupCount(); i++) {
             String grp = matcher.group(i);
             if (grp != null && grp.equals(marker)) {
                 return i;
             }
         }
-        throw new IllegalArgumentException(
-                "\"" + marker + "\" not found in \"" + pat.pattern() + "\"");
+
+        throw new IllegalArgumentException("\"" + marker + "\" not found in \"" + FORMAT_PAT.pattern() + "\"");
     }
 
     /**
@@ -263,20 +259,20 @@ public class FormatPart {
      *
      * @return The color specification or <tt>null</tt>.
      */
-    private static Pair<ARGB, String> getColorData(MatcherAdapter matcher) {
+    private static Pair<Integer, String> getColorData(Matcher matcher) {
         String cdesc = matcher.group(COLOR_GROUP);
         if (cdesc == null || cdesc.length() == 0) {
             return null;
         }
-        ARGB newColor = NAMED_COLORS.get(cdesc);
+        Integer newColor = NAMED_COLORS.get(cdesc);
         if (newColor == null) {
             ValueFormatter.logger.warning("Unknown color: " + ValueFormatter.quote(cdesc));
         }
 
-        return new Pair<>(newColor, '[' + cdesc + ']');
+        return new ImmutablePair<>(newColor, '[' + cdesc + ']');
     }
 
-    public static String getColorName(ARGB color) {
+    public static String getColorName(Integer color) {
         return NAMED_COLORS.entrySet().stream().filter(entry -> entry.getValue().equals(color)).findFirst()
                 .map(Map.Entry::getKey).orElse("");
     }
@@ -289,7 +285,7 @@ public class FormatPart {
      *
      * @return The condition specification or <tt>null</tt>.
      */
-    protected FormatCondition getCondition(MatcherAdapter matcher) {
+    protected FormatCondition getCondition(Matcher matcher) {
         String operator = matcher.group(CONDITION_OPERATOR_GROUP);
         if (operator == null || operator.length() == 0) {
             return null;
@@ -309,7 +305,7 @@ public class FormatPart {
      *
      * @return The FormatType.
      */
-    protected FormatType getCellFormatType(MatcherAdapter matcher) {
+    protected FormatType getCellFormatType(Matcher matcher) {
         String fdesc = matcher.group(SPECIFICATION_GROUP);
         return this.formatType(fdesc);
     }
@@ -322,11 +318,11 @@ public class FormatPart {
      *
      * @return The formatter.
      */
-    protected ValueFormatter getFormatter(Locale locale, MatcherAdapter matcher) {
+    protected ValueFormatter getFormatter(Locale locale, Matcher matcher) {
         String fdesc = matcher.group(SPECIFICATION_GROUP);
 
         // For now, we don't support localised currencies, so simplify if there
-        MatcherAdapter currencyM = CURRENCY_PAT.matcher(fdesc);
+        Matcher currencyM = CURRENCY_PAT.matcher(fdesc);
         if (currencyM.find()) {
             String currencyPart = currencyM.group(1);
             String currencyRepl;
@@ -356,7 +352,7 @@ public class FormatPart {
             return FormatType.GENERAL;
         }
 
-        MatcherAdapter matcher = SPECIFICATION_PAT.matcher(fdesc);
+        Matcher matcher = SPECIFICATION_PAT.matcher(fdesc);
         boolean couldBeDate = false;
         boolean seenZero = false;
         while (matcher.find()) {
@@ -455,17 +451,17 @@ public class FormatPart {
 
     /**
      * Apply this format part to the given value.  This returns a {@link
-     * FormatResult} object with the results.
+     * PoiResult} object with the results.
      *
      * @param value The value to apply this format part to.
      *
-     * @return A {@link FormatResult} object containing the results of
+     * @return A {@link PoiResult} object containing the results of
      *         applying the format to the value.
      */
-    public FormatResult apply(Object value) {
+    public PoiResult apply(Object value) {
         boolean applies = applies(value);
         String text;
-        ARGB textColor;
+        Integer textColor;
         if (applies) {
             text = format.format(value);
             textColor = color;
@@ -473,7 +469,7 @@ public class FormatPart {
             text = format.simpleFormat(value);
             textColor = null;
         }
-        return new FormatResult(text, textColor);
+        return new PoiResult(text, textColor);
     }
 
     public ValueFormatter getFormat() {
@@ -483,28 +479,6 @@ public class FormatPart {
     public int getNumberOfDecimalPlaces() {
         return format.getNumberOfDecimalPlaces();
     }
-
-//    public String createNestedFormatWith(Integer decimalsCount, ARGB color, Boolean setBraces,
-//                                         Boolean setMinus, Boolean setThousandsSeparator) {
-//        String resultColor = Optional.ofNullable(this.colorString).orElse("");
-//        if (color != null) {
-//            if (ARGB.BLACK.equals(color)) {
-//                resultColor = "";
-//            } else {
-//                String newColor = getColorName(color).toLowerCase(Locale.ROOT);
-//                newColor = String.valueOf(newColor.charAt(0)).toUpperCase(Locale.ROOT) + newColor.substring(1);
-//                resultColor = "[" + newColor + "]";
-//            }
-//        }
-//
-//        String resultCondition = Optional.ofNullable(conditionString).orElse("");
-//
-//        String resultFormat = this.format.createNestedFormatWith(decimalsCount, setThousandsSeparator, setMinus);
-//
-//        resultFormat = handleSetBrackets(resultFormat, setBraces);
-//
-//        return resultColor + resultCondition + resultFormat;
-//    }
 
     /**
      * Returns the FormatType object implied by the format specification for
@@ -542,7 +516,7 @@ public class FormatPart {
         // \u0000 with '' to mean a quote char.  Oy.
         //
         // For formats that don't use "'" we don't do any of this
-        MatcherAdapter matcher = SPECIFICATION_PAT.matcher(fdesc);
+        Matcher matcher = SPECIFICATION_PAT.matcher(fdesc);
         StringBuffer fmt = new StringBuffer();
         while (matcher.find()) {
             String part = group(matcher, 0);
@@ -637,7 +611,7 @@ public class FormatPart {
      *
      * @return The group or <tt>""</tt>.
      */
-    public static String group(MatcherAdapter matcher, int group) {
+    public static String group(Matcher matcher, int group) {
         String str = matcher.group(group);
         return (str == null ? "" : str);
     }

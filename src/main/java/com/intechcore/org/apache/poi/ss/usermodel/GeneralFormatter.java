@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
@@ -22,7 +22,6 @@
 package com.intechcore.org.apache.poi.ss.usermodel;
 
 import com.intechcore.org.apache.poi.util.FormatHelper;
-import com.intechcore.scomponents.helper.MathHelper;
 
 import java.util.Formatter;
 import java.util.Locale;
@@ -53,7 +52,7 @@ public class GeneralFormatter extends ValueFormatter {
     public void formatValue(StringBuffer toAppendTo, Object value) {
         if (value instanceof Number) {
             double val = ((Number) value).doubleValue();
-            if (MathHelper.equals(val, 0)) {
+            if (val == 0) {
                 toAppendTo.append('0');
                 return;
             }
@@ -63,7 +62,7 @@ public class GeneralFormatter extends ValueFormatter {
             boolean stripZeros = true;
             if (exp > 10 || exp < -9) {
                 fmt = "%1.5E";
-            } else if (!MathHelper.equals((long) val, val)) {
+            } else if ((long) val != val) {
                 fmt = "%1.9f";
             } else {
                 fmt = "%1.0f";

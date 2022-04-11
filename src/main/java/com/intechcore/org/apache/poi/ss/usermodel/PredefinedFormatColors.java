@@ -14,14 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
-
-import com.intechcore.scomponents.helper.ARGB;
 
 public enum PredefinedFormatColors {
     BLACK                (0xFF000000),
@@ -73,16 +71,13 @@ public enum PredefinedFormatColors {
     TAN                  (0xFFFFCC99),
     AUTOMATIC            (0xFF000000);
 
-    private final ARGB color;
+    private final int argb;
 
     PredefinedFormatColors(int argb) {
-        this.color = ARGB.create(argb);
+        this.argb = argb;
     }
 
-    /**
-     * @return (a copy of) the {@link ARGB} assigned to the enum.
-     */
-    public ARGB getColor() {
-        return color;
+    public int getColor() {
+        return this.argb;
     }
 }

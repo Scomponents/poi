@@ -14,18 +14,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2021 - Intechcore GmbH.
+   2022 - Intechcore GmbH.
    This class is modified copy of Apache POI 4.1.2 class.
    It was modified to use Apache POI's data formatting
    in SCell product.
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import com.intechcore.scomponents.services.regexwrapper.MatcherAdapter;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.regex.Matcher;
 
 /**
  * Internal helper class for NumberFormatter
@@ -45,7 +44,7 @@ public class NumberPartHandler implements PartHandler {
     private boolean startDigitsAfterSlash;
     private final StringBuilder digitsAfterSlashAcc = new StringBuilder();
 
-    public String handlePart(MatcherAdapter m, String part, FormatType type, StringBuffer descBuf) {
+    public String handlePart(Matcher m, String part, FormatType type, StringBuffer descBuf) {
         int pos = descBuf.length();
         char firstCh = part.charAt(0);
         switch (firstCh) {
