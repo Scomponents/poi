@@ -9,4 +9,5 @@
     <inherits name="com.intechcore.scomponents.scellformulas"/>
 
     <source path="util"/>
+    <source path="bridge"/>
 </module>
