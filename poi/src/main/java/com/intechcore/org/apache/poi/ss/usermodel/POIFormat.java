@@ -23,9 +23,9 @@ package com.intechcore.org.apache.poi.ss.usermodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.intechcore.org.apache.poi.bridge.BridgeContainer;
-import com.intechcore.org.apache.poi.bridge.IValueFormatDetectorBridge;
-import com.intechcore.org.apache.poi.bridge.PoiResult;
+import com.intechcore.poi.bridge.BridgeContainer;
+import com.intechcore.poi.bridge.IValueFormatDetectorBridge;
+import com.intechcore.poi.bridge.PoiResult;
 import com.intechcore.org.apache.poi.util.FormatHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

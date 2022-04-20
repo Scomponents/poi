@@ -21,7 +21,7 @@
 ==================================================================== */
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import com.intechcore.org.apache.poi.bridge.PoiResult;
+import com.intechcore.poi.bridge.PoiResult;
 import com.intechcore.org.apache.poi.util.StringCodepointsIterable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

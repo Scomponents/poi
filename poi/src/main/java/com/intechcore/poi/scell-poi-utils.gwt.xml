@@ -5,9 +5,6 @@
 -->
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.9.0//EN" "http://gwtproject.org/doctype/2.9.0/gwt-module.dtd">
 <module>
-    <inherits name="com.intechcore.scellinterfaces"/>
-    <inherits name="com.intechcore.scomponents.scellformulas"/>
-
-    <source path="util"/>
+    <source path="../org/apache/poi/util"/>
     <source path="bridge"/>
 </module>

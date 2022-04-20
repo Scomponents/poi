@@ -14,18 +14,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   2022 - Intechcore GmbH.
+   2021 - Intechcore GmbH.
+   This class is modified copy of Apache POI 4.1.2 class.
+   It was modified to use Apache POI's data formatting
+   in SCell product.
 ==================================================================== */
+package com.intechcore.org.apache.poi.util;
 
+public class FormatHelper {
+    public static final String GENERAL_CODE = "General";
+    public static final String TEXT_FORMAT = "@";
 
-package com.intechcore.org.apache.poi.bridge;
+    /*
+     * Cells that cannot be formatted, e.g. cells that have a date or time
+     * format and have an invalid date or time value, are displayed as 255
+     * pound signs ("#").
+     */
+    private static final String HASH_TAGS = "###################################################";
+    public static final String INVALID_VALUE_FOR_FORMAT = HASH_TAGS + HASH_TAGS + HASH_TAGS + HASH_TAGS + HASH_TAGS;
 
-public class PoiResult {
-    public final Integer argb;
-    public final String formatResult;
-
-    public PoiResult(String formatResult, Integer argb) {
-        this.argb = argb;
-        this.formatResult = formatResult;
+    public static boolean isGeneralFormatCode(String format) {
+        return format.equals(GENERAL_CODE) || TEXT_FORMAT.equals(format);
     }
 }

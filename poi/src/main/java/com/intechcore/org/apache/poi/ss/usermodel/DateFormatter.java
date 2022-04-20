@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
 
-import com.intechcore.org.apache.poi.bridge.BridgeContainer;
+import com.intechcore.poi.bridge.BridgeContainer;
 import com.intechcore.org.apache.poi.util.StringUtil;
 
 public class DateFormatter extends ValueFormatter {
