@@ -276,15 +276,17 @@ public class NumberFormatter extends ValueFormatter {
         integerSpecials.addAll(specials.subList(0, integerEnd()));
 
         if (exponent == null) {
-            StringBuilder fmtBuf = new StringBuilder("%");
-
             int integerPartWidth = calculateIntegerPartWidth();
             int totalWidth = integerPartWidth + fractionPartWidth;
 
-            fmtBuf.append('0').append(totalWidth).append('.').append(precision);
+            // need to handle empty width specially as %00.0f fails during formatting
+            // From POI 5.2.2
+            if(totalWidth == 0) {
+                printfFmt = "";
+            } else {
+                printfFmt = "%0" + totalWidth + '.' + precision + "f";
+            }
 
-            fmtBuf.append("f");
-            printfFmt = fmtBuf.toString();
             decimalFmt = null;
         } else {
             StringBuffer fmtBuf = new StringBuffer();
@@ -494,7 +496,7 @@ public class NumberFormatter extends ValueFormatter {
         return s.ch == '0' || s.ch == '?' || s.ch == '#';
     }
 
-    protected int calculateIntegerPartWidth() {
+    private int calculateIntegerPartWidth() {
         int digitCount = 0;
         for (Special s : specials) {
             //!! Handle fractions: The previous set of digits before that is the numerator,

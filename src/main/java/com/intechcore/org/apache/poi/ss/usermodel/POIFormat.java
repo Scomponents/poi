@@ -155,7 +155,8 @@ public class POIFormat implements Serializable {
         Map<String, POIFormat> formatMap = formatCache.computeIfAbsent(locale, k -> new WeakHashMap<>());
         POIFormat result = formatMap.get(format);
         if (result == null) {
-            IValueFormatDetectorBridge formatDetector = BridgeContainer.getDetectorStorage().getDetectorBridge(locale, format);
+            IValueFormatDetectorBridge formatDetector = BridgeContainer.getDetectorStorage()
+                    .getDetectorBridge(locale, format);
             if (formatDetector.isGeneral()) {
                 result = new GeneralPOIFormat(locale);
             } else {
@@ -202,6 +203,14 @@ public class POIFormat implements Serializable {
         return result;
     }
 
+    public String getCurrencySign() {
+       if (!this.isNumeric()) {
+           return null;
+       }
+
+       return this.posNumFmt.getCurrencySign();
+    }
+
     private IValueFormatDetectorBridge updateFormat(Function<FormatPart, String> function, boolean negOnly) {
         Optional<String> posFormatPart = Optional.ofNullable(this.posNumFmt)
                 .map(part -> negOnly ? part.toString() : function.apply(part));
@@ -227,7 +236,6 @@ public class POIFormat implements Serializable {
         this.locale = locale;
         this.formatDetector = BridgeContainer.getDetectorStorage().getDetectorBridge(locale, formatCode);
 
-        FormatPart defaultTextFormat = new FormatPart(locale, FormatHelper.TEXT_FORMAT);
         Matcher formatPartsMatcher = PARTS_DELIMITER.matcher(formatCode);
         List<FormatPart> parts = new ArrayList<>();
 
@@ -246,6 +254,8 @@ public class POIFormat implements Serializable {
                 parts.add(null);
             }
         }
+
+        FormatPart defaultTextFormat = new FormatPart(locale, FormatHelper.TEXT_FORMAT);
 
         this.formatPartCount = parts.size();
 
@@ -374,7 +384,7 @@ public class POIFormat implements Serializable {
                     return negNumFmt;
                 } else {
                     // Return ###...### (255 #s) to match Excel 2007 behaviour
-                    return new FormatPart(QUOTE + FormatHelper.INVALID_VALUE_FOR_FORMAT + QUOTE);
+                    return new FormatPart(this.locale, QUOTE + FormatHelper.INVALID_VALUE_FOR_FORMAT + QUOTE);
                 }
             } else {
                 if ((!posNumFmt.hasCondition() && val > 0)

@@ -52,6 +52,8 @@ import java.util.regex.Pattern;
  * @author Ken Arnold, Industrious Media LLC
  */
 public class FormatPart {
+    private String currencySign;
+
     protected final Integer color;
     protected final ValueFormatter format;
     protected final FormatType type;
@@ -117,7 +119,7 @@ public class FormatPart {
                             "\\s*([0-9]+(?:\\.[0-9]*)?)\\s*"; //  # The constant to test against
 
         // A currency symbol / string, in a specific locale
-        String currency = "(\\[\\$.{0,3}-[0-9a-f]{3}\\])";
+        String currency = "(\\[\\$.{0,3}(-[0-9a-f]{3,4})?])"; // FROM POI 5.2.2
 
         String color = "\\[(black|blue|cyan|green|magenta|red|white|yellow|color [0-9]+)\\]";
 
@@ -172,15 +174,6 @@ public class FormatPart {
     /**
      * Create an object to represent a format part.
      *
-     * @param desc The string to parse.
-     */
-    public FormatPart(String desc) {
-        this(Locale.getDefault(), desc);
-    }
-
-    /**
-     * Create an object to represent a format part.
-     *
      * @param locale The locale to use.
      * @param desc The string to parse.
      */
@@ -197,9 +190,9 @@ public class FormatPart {
             this.color = null;
         }
 
-        condition = getCondition(matcher);
-        type = getCellFormatType(matcher);
-        format = getFormatter(locale, matcher);
+        this.condition = this.getCondition(matcher);
+        this.type = this.getCellFormatType(matcher);
+        this.format = this.getFormatter(locale, matcher);
     }
 
     /**
@@ -238,7 +231,8 @@ public class FormatPart {
     private static int findGroup(String str, String marker) {
         Matcher matcher = FORMAT_PAT.matcher(str);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Pattern \"" + FORMAT_PAT.pattern() + "\" doesn't match \"" + str + "\"");
+            throw new IllegalArgumentException(
+                    "Pattern \"" + FORMAT_PAT.pattern() + "\" doesn't match \"" + str + "\"");
         }
 
         for (int i = 1; i <= matcher.groupCount(); i++) {
@@ -285,7 +279,7 @@ public class FormatPart {
      *
      * @return The condition specification or <tt>null</tt>.
      */
-    protected FormatCondition getCondition(Matcher matcher) {
+    private FormatCondition getCondition(Matcher matcher) {
         String operator = matcher.group(CONDITION_OPERATOR_GROUP);
         if (operator == null || operator.length() == 0) {
             return null;
@@ -305,7 +299,7 @@ public class FormatPart {
      *
      * @return The FormatType.
      */
-    protected FormatType getCellFormatType(Matcher matcher) {
+    private FormatType getCellFormatType(Matcher matcher) {
         String fdesc = matcher.group(SPECIFICATION_GROUP);
         return this.formatType(fdesc);
     }
@@ -318,25 +312,34 @@ public class FormatPart {
      *
      * @return The formatter.
      */
-    protected ValueFormatter getFormatter(Locale locale, Matcher matcher) {
+    private ValueFormatter getFormatter(Locale locale, Matcher matcher) {
         String fdesc = matcher.group(SPECIFICATION_GROUP);
 
         // For now, we don't support localised currencies, so simplify if there
         Matcher currencyM = CURRENCY_PAT.matcher(fdesc);
         if (currencyM.find()) {
             String currencyPart = currencyM.group(1);
-            String currencyRepl;
+            String currencyRepl = null;
             if (currencyPart.startsWith("[$-")) {
                 // Default $ in a different locale
                 currencyRepl = "$";
+            } else if (!currencyPart.contains("-")) { // From POI 5.2.2
+                // Accounting formats such as USD [$USD]
+                currencyRepl = currencyPart.substring(2, currencyPart.indexOf("]"));
             } else {
                 currencyRepl = currencyPart.substring(2, currencyPart.lastIndexOf('-'));
             }
+
+            this.currencySign = currencyRepl;
             fdesc = fdesc.replace(currencyPart, currencyRepl);
         }
 
         // Build a formatter for this simplified string
-        return type.formatter(locale, fdesc);
+        return this.type.formatter(locale, fdesc);
+    }
+
+    public String getCurrencySign() {
+        return this.currencySign;
     }
 
     /**
