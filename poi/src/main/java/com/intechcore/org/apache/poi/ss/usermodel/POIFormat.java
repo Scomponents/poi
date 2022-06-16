@@ -190,6 +190,10 @@ public class POIFormat implements Serializable {
                 false);
     }
 
+    public IValueFormatDetectorBridge getCurrent() {
+        return this.formatDetector;
+    }
+
     public boolean isNumeric() {
         boolean result = this.posNumFmt.type == FormatType.NUMBER;
         if (this.negNumFmt != null) {
