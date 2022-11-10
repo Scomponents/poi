@@ -375,7 +375,6 @@ public class FormatPart {
                     case "D":
                     case "y":
                     case "Y":
-                        return FormatType.DATE;
                     case "h":
                     case "H":
                     case "m":
@@ -408,12 +407,12 @@ public class FormatPart {
             }
         }
 
-        // Nothing definitive was found, so we figure out it deductively
-        if (couldBeDate) {
-            return FormatType.DATE;
-        }
+        // Nothing definitive was found, so we figure out it deductively. Sherlock
         if (seenZero) {
             return FormatType.NUMBER;
+        }
+        if (couldBeDate) {
+            return FormatType.DATE;
         }
         return FormatType.TEXT;
     }
