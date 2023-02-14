@@ -11,14 +11,7 @@
     </parent>
 
     <artifactId>scell-apache-poi</artifactId>
-    <version>1.0.21</version>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-
-        <log4j.version>2.17.1</log4j.version>
-    </properties>
+    <version>1.0.21-java${javaVersion}</version>
 
     <organization>
         <name>Intechcore GmbH</name>
@@ -41,11 +34,6 @@
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-core</artifactId>-->
-<!--            <version>${log4j.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
