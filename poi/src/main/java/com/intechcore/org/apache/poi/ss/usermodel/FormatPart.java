@@ -358,6 +358,8 @@ public class FormatPart {
         Matcher matcher = SPECIFICATION_PAT.matcher(fdesc);
         boolean couldBeDate = false;
         boolean seenZero = false;
+        String previous = null;
+
         while (matcher.find()) {
             String repl = matcher.group(0);
             Iterator<String> codePoints = new StringCodepointsIterable(repl).iterator();
@@ -398,12 +400,19 @@ public class FormatPart {
                         } else {
                             return FormatType.GENERAL;
                         }
+                    case "$":
+                        if ("[".equals(previous)) {
+                            return FormatType.NUMBER;
+                        } else {
+                            break;
+                        }
                     case "#":
                     case "?":
                         return FormatType.NUMBER;
                     default:
                         break;
                 }
+                previous = c2;
             }
         }
 

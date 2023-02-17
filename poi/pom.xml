@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>scell-apache-poi</artifactId>
-    <version>1.0.21-java${javaVersion}</version>
+    <version>1.0.22-java${javaVersion}</version>
 
     <organization>
         <name>Intechcore GmbH</name>
