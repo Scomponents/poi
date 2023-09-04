@@ -40,15 +40,15 @@ import java.util.stream.Stream;
 
 import com.intechcore.org.apache.poi.util.FormatHelper;
 import com.zaxxer.sparsebits.SparseBitSet;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements printing out a value using a number format.
  */
 public class NumberFormatter extends ValueFormatter {
 
-    private static final Logger LOG = LogManager.getLogger(NumberFormatter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NumberFormatter.class);
 
     private static final Pattern fractionStripper = Pattern.compile("(\"[^\"]*\")|([^ ?#\\d/]+)");
     private static final Pattern fractionPattern = Pattern.compile("(?:([#\\d]+)\\s+)?(#+)\\s*/\\s*([#\\d]+)");

@@ -14,7 +14,7 @@
         <javaVersion>8</javaVersion>
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>
-        <log4j.version>2.20.0</log4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
     </properties>
 
     <modules>

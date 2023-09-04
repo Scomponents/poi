@@ -27,8 +27,8 @@ import com.intechcore.poi.bridge.BridgeContainer;
 import com.intechcore.poi.bridge.IValueFormatDetectorBridge;
 import com.intechcore.poi.bridge.PoiResult;
 import com.intechcore.org.apache.poi.util.FormatHelper;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -93,7 +93,7 @@ public class POIFormat implements Serializable {
     protected final FormatPart textFmt;
     protected final int formatPartCount;
 
-    private static final Logger LOG = LogManager.getLogger(POIFormat.class);
+    private static final Logger LOG = LoggerFactory.getLogger(POIFormat.class);
 
     protected static final Pattern PARTS_DELIMITER = Pattern.compile(FormatPart.FORMAT_PAT.pattern() + "(;|$)",
             Pattern.CASE_INSENSITIVE);
