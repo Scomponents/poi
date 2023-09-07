@@ -93,7 +93,14 @@ public class NumberPartHandler implements PartHandler {
                 boolean addToAcc = firstCh == '0' && startDigitsAfterSlash;
                 for (int i = 0; i < part.length(); i++) {
                     char ch = part.charAt(i);
-                    specials.add(new NumberFormatter.Special(ch, pos + i));
+                    if(ch == '?' && specials.isEmpty()) {
+                        char[] partArray = part.toCharArray();
+                        partArray[i] = ' ';
+                        part = new String(partArray);
+                    }
+                    else {
+                        specials.add(new NumberFormatter.Special(ch, pos + i));
+                    }
                     if (addToAcc) {
                         digitsAfterSlashAcc.append(ch);
                     }
