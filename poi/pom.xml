@@ -74,6 +74,23 @@
                     <skip>false</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <id>set-variables-in-pom</id>
+                        <configuration>
+                            <flattenMode>bom</flattenMode>
+                        </configuration>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
