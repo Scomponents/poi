@@ -32,4 +32,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>BuildOnJava11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <javaVersion>11</javaVersion>
+            </properties>
+        </profile>
+    </profiles>
 </project>

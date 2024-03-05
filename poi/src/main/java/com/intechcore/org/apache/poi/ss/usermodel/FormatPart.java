@@ -23,8 +23,6 @@ package com.intechcore.org.apache.poi.ss.usermodel;
 
 import com.intechcore.poi.bridge.PoiResult;
 import com.intechcore.org.apache.poi.util.StringCodepointsIterable;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -182,10 +180,10 @@ public class FormatPart {
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Unrecognized format: " + ValueFormatter.quote(desc));
         }
-        Pair<Integer, String> colorData = getColorData(matcher);
+        ColorData colorData = getColorData(matcher);
         if (colorData != null) {
-            this.color = colorData.getKey();
-            this.colorString = colorData.getValue();
+            this.color = colorData.getNamedColorIndex();
+            this.colorString = colorData.getColorText();
         } else {
             this.color = null;
         }
@@ -253,7 +251,7 @@ public class FormatPart {
      *
      * @return The color specification or <tt>null</tt>.
      */
-    private static Pair<Integer, String> getColorData(Matcher matcher) {
+    private static ColorData getColorData(Matcher matcher) {
         String cdesc = matcher.group(COLOR_GROUP);
         if (cdesc == null || cdesc.length() == 0) {
             return null;
@@ -263,7 +261,25 @@ public class FormatPart {
             ValueFormatter.logger.warning("Unknown color: " + ValueFormatter.quote(cdesc));
         }
 
-        return new ImmutablePair<>(newColor, '[' + cdesc + ']');
+        return new ColorData(newColor, '[' + cdesc + ']');
+    }
+
+    private static class ColorData {
+        private final Integer namedColorIndex;
+        private final String colorText;
+
+        private ColorData(Integer namedColorIndex, String colorText) {
+            this.namedColorIndex = namedColorIndex;
+            this.colorText = colorText;
+        }
+
+        public Integer getNamedColorIndex() {
+            return this.namedColorIndex;
+        }
+
+        public String getColorText() {
+            return this.colorText;
+        }
     }
 
     public static String getColorName(Integer color) {

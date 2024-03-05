@@ -22,7 +22,6 @@
 
 package com.intechcore.org.apache.poi.ss.usermodel;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -193,6 +192,6 @@ public class FractionFormat extends Format {
     }
 
     public Object parseObject(String source, ParsePosition pos) {
-        throw new NotImplementedException();
+        throw new IllegalStateException("Not implemented");
     }
 }

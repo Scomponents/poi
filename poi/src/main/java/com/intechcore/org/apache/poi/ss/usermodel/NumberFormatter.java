@@ -26,6 +26,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -39,7 +40,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.intechcore.org.apache.poi.util.FormatHelper;
-import com.zaxxer.sparsebits.SparseBitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -651,7 +651,7 @@ public class NumberFormatter extends ValueFormatter {
         Iterator<NumberStringMod> changes = mods.iterator();
         NumberStringMod nextChange = (changes.hasNext() ? changes.next() : null);
         // records chars already deleted
-        SparseBitSet deletedChars = new SparseBitSet();
+        BitSet deletedChars = new BitSet(); // SparseBitSet has removed to get rid of extra dependencies
         int adjust = 0;
         for (Special s : specials) {
             int adjustedPos = s.pos + adjust;
@@ -708,6 +708,7 @@ public class NumberFormatter extends ValueFormatter {
                                     output.setCharAt(i, fillCh);
                                 }
                             }
+
                             deletedChars.set(delPos, delEndPos);
                         }
                         break;
